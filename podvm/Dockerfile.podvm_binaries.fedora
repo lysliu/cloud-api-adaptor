@@ -15,9 +15,6 @@ ARG GUEST_COMPONENTS_REPO
 ARG AA_KBC="offline_fs_kbc"
 # If not provided, uses system architecture
 ARG ARCH
-#This is the name of the policy file under
-#files/etc/kata-opa
-ARG DEFAULT_AGENT_POLICY_FILE=allow-all.rego
 
 ENV CLOUD_PROVIDER ${CLOUD_PROVIDER}
 ENV PODVM_DISTRO ${PODVM_DISTRO}
@@ -25,14 +22,16 @@ ENV GUEST_COMPONENTS_VERSION ${GUEST_COMPONENTS_VERSION}
 ENV GUEST_COMPONENTS_REPO ${GUEST_COMPONENTS_REPO}
 ENV AA_KBC ${AA_KBC}
 ENV ARCH ${ARCH}
-ENV DEFAULT_AGENT_POLICY_FILE ${DEFAULT_AGENT_POLICY_FILE}
 
 # Set these as they are required in the Makefile
 ENV IMAGE_URL "none"
 ENV IMAGE_CHECKSUM "none"
 
-RUN cd cloud-api-adaptor/podvm && \
-     LIBC=gnu make binaries
+COPY . /src/cloud-api-adaptor
+
+WORKDIR /src/cloud-api-adaptor/podvm
+
+RUN LIBC=gnu make binaries
 
 FROM scratch
 COPY --from=podvm_builder /src/cloud-api-adaptor/podvm/files /
